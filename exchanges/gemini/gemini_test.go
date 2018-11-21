@@ -57,7 +57,7 @@ func TestSetup(t *testing.T) {
 		t.Error("Test Failed - Gemini Setup() init error")
 	}
 
-	geminiConfig.AuthenticatedAPISupport = true
+	geminiConfig.API.AuthenticatedSupport = true
 
 	Session[1].Setup(geminiConfig)
 	Session[2].Setup(geminiConfig)
@@ -327,8 +327,8 @@ func TestFormatWithdrawPermissions(t *testing.T) {
 // Any tests below this line have the ability to impact your orders on the exchange. Enable canManipulateRealOrders to run them
 // ----------------------------------------------------------------------------------------------------------------------------
 func isRealOrderTestEnabled() bool {
-	if Session[1].APIKey == "" || Session[1].APISecret == "" ||
-		Session[1].APIKey == "Key" || Session[1].APISecret == "Secret" ||
+	if Session[1].API.Credentials.Key == "" || Session[1].API.Credentials.Secret == "" ||
+		Session[1].API.Credentials.Key == "Key" || Session[1].API.Credentials.Secret == "Secret" ||
 		!canManipulateRealOrders {
 		return false
 	}

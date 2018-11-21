@@ -32,10 +32,10 @@ func TestSetup(t *testing.T) {
 		t.Error("Test Failed - Gemini Setup() init error")
 	}
 
-	itbitConfig.AuthenticatedAPISupport = true
-	itbitConfig.APIKey = apiKey
-	itbitConfig.APISecret = apiSecret
-	itbitConfig.ClientID = clientID
+	itbitConfig.API.AuthenticatedSupport = true
+	itbitConfig.API.Credentials.Key = apiKey
+	itbitConfig.API.Credentials.Secret = apiSecret
+	itbitConfig.API.Credentials.ClientID = clientID
 
 	i.Setup(itbitConfig)
 }
@@ -247,9 +247,7 @@ func TestFormatWithdrawPermissions(t *testing.T) {
 // Any tests below this line have the ability to impact your orders on the exchange. Enable canManipulateRealOrders to run them
 // ----------------------------------------------------------------------------------------------------------------------------
 func isRealOrderTestEnabled() bool {
-	if i.APIKey == "" || i.APISecret == "" ||
-		i.APIKey == "Key" || i.APISecret == "Secret" ||
-		!canManipulateRealOrders {
+	if !i.ValidateAPICredentials() || !canManipulateRealOrders {
 		return false
 	}
 	return true

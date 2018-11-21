@@ -2,7 +2,6 @@ package btcc
 
 import (
 	"testing"
-	"time"
 
 	"github.com/thrasher-/gocryptotrader/config"
 	"github.com/thrasher-/gocryptotrader/currency/pair"
@@ -32,10 +31,10 @@ func TestSetup(t *testing.T) {
 	}
 	b.Setup(bConfig)
 
-	if !b.IsEnabled() || b.AuthenticatedAPISupport ||
-		b.RESTPollingDelay != time.Duration(10) || b.Verbose ||
+	if !b.IsEnabled() || b.API.AuthenticatedSupport ||
 		b.Websocket.IsEnabled() || len(b.BaseCurrencies) < 1 ||
-		len(b.AvailablePairs) < 1 || len(b.EnabledPairs) < 1 {
+		len(b.CurrencyPairs.Spot.Available) < 1 || len(b.CurrencyPairs.Spot.Enabled) < 1 ||
+		b.Verbose {
 		t.Error("Test Failed - BTCC Setup values not set correctly")
 	}
 }
@@ -174,9 +173,7 @@ func TestFormatWithdrawPermissions(t *testing.T) {
 // Any tests below this line have the ability to impact your orders on the exchange. Enable canManipulateRealOrders to run them
 // ----------------------------------------------------------------------------------------------------------------------------
 func isRealOrderTestEnabled() bool {
-	if b.APIKey == "" || b.APISecret == "" ||
-		b.APIKey == "Key" || b.APISecret == "Secret" ||
-		!canManipulateRealOrders {
+	if !b.ValidateAPICredentials() || !canManipulateRealOrders {
 		return false
 	}
 	return true

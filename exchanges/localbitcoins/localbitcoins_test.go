@@ -31,9 +31,9 @@ func TestSetup(t *testing.T) {
 		t.Error("Test Failed - LakeBTC Setup() init error")
 	}
 
-	localbitcoinsConfig.AuthenticatedAPISupport = true
-	localbitcoinsConfig.APIKey = apiKey
-	localbitcoinsConfig.APISecret = apiSecret
+	localbitcoinsConfig.API.AuthenticatedSupport = true
+	localbitcoinsConfig.API.Credentials.Key = apiKey
+	localbitcoinsConfig.API.Credentials.Secret = apiSecret
 
 	l.Setup(localbitcoinsConfig)
 }
@@ -56,7 +56,7 @@ func TestGetTradableCurrencies(t *testing.T) {
 
 func TestGetAccountInfo(t *testing.T) {
 	t.Parallel()
-	if l.APIKey == "" || l.APISecret == "" {
+	if !l.ValidateAPICredentials() {
 		t.Skip()
 	}
 	_, err := l.GetAccountInformation("", true)
@@ -71,7 +71,7 @@ func TestGetAccountInfo(t *testing.T) {
 
 func TestGetads(t *testing.T) {
 	t.Parallel()
-	if l.APIKey == "" || l.APISecret == "" {
+	if !l.ValidateAPICredentials() {
 		t.Skip()
 	}
 	_, err := l.Getads("")
@@ -86,7 +86,7 @@ func TestGetads(t *testing.T) {
 
 func TestEditAd(t *testing.T) {
 	t.Parallel()
-	if l.APIKey == "" || l.APISecret == "" {
+	if !l.ValidateAPICredentials() {
 		t.Skip()
 	}
 	edit := AdEdit{}
@@ -201,11 +201,10 @@ func TestFormatWithdrawPermissions(t *testing.T) {
 // Any tests below this line have the ability to impact your orders on the exchange. Enable canManipulateRealOrders to run them
 // ----------------------------------------------------------------------------------------------------------------------------
 func isRealOrderTestEnabled() bool {
-	if l.APIKey == "" || l.APISecret == "" ||
-		l.APIKey == "Key" || l.APISecret == "Secret" ||
-		!canManipulateRealOrders {
+	if !l.ValidateAPICredentials() || !canManipulateRealOrders {
 		return false
 	}
+
 	return true
 }
 

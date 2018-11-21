@@ -7,6 +7,7 @@ import (
 	"github.com/thrasher-/gocryptotrader/currency/pair"
 	"github.com/thrasher-/gocryptotrader/currency/symbol"
 	exchange "github.com/thrasher-/gocryptotrader/exchanges"
+	"github.com/thrasher-/gocryptotrader/exchanges/assets"
 )
 
 var w WEX
@@ -30,21 +31,22 @@ func TestSetup(t *testing.T) {
 	if err != nil {
 		t.Error("Test Failed - WEX init error")
 	}
-	conf.APIKey = apiKey
-	conf.APISecret = apiSecret
-	conf.AuthenticatedAPISupport = true
+	conf.API.Credentials.Key = apiKey
+	conf.API.Credentials.Secret = apiSecret
+	conf.API.AuthenticatedSupport = true
 
 	w.Setup(conf)
 }
 
-func TestGetTradablePairs(t *testing.T) {
+func TestFetchTradablePairs(t *testing.T) {
 	if isWexEncounteringIssues {
 		t.Skip()
 	}
+
 	t.Parallel()
-	_, err := w.GetTradablePairs()
+	_, err := w.FetchTradablePairs(assets.AssetTypeSpot)
 	if err != nil {
-		t.Errorf("Test failed. GetTradablePairs err: %s", err)
+		t.Errorf("Test failed. FetchTradablePairs(asset asets.AssetType) err: %s", err)
 	}
 }
 
@@ -52,6 +54,7 @@ func TestGetInfo(t *testing.T) {
 	if isWexEncounteringIssues {
 		t.Skip()
 	}
+
 	t.Parallel()
 	_, err := w.GetInfo()
 	if err != nil {
@@ -63,6 +66,7 @@ func TestGetTicker(t *testing.T) {
 	if isWexEncounteringIssues {
 		t.Skip()
 	}
+
 	t.Parallel()
 	_, err := w.GetTicker("btc_usd")
 	if err != nil {
@@ -74,6 +78,7 @@ func TestGetDepth(t *testing.T) {
 	if isWexEncounteringIssues {
 		t.Skip()
 	}
+
 	t.Parallel()
 	_, err := w.GetDepth("btc_usd")
 	if err != nil {
@@ -85,6 +90,7 @@ func TestGetTrades(t *testing.T) {
 	if isWexEncounteringIssues {
 		t.Skip()
 	}
+
 	t.Parallel()
 	_, err := w.GetTrades("btc_usd")
 	if err != nil {
@@ -96,6 +102,7 @@ func TestGetAccountInfo(t *testing.T) {
 	if isWexEncounteringIssues {
 		t.Skip()
 	}
+
 	t.Parallel()
 	_, err := w.GetAccountInfo()
 	if err == nil {
@@ -107,6 +114,7 @@ func TestGetActiveOrders(t *testing.T) {
 	if isWexEncounteringIssues {
 		t.Skip()
 	}
+
 	t.Parallel()
 	_, err := w.GetActiveOrders("")
 	if err == nil {
@@ -118,6 +126,7 @@ func TestGetOrderInfo(t *testing.T) {
 	if isWexEncounteringIssues {
 		t.Skip()
 	}
+
 	t.Parallel()
 	_, err := w.GetOrderInfo(6196974)
 	if err == nil {
@@ -129,6 +138,7 @@ func TestCancelExistingOrder(t *testing.T) {
 	if isWexEncounteringIssues {
 		t.Skip()
 	}
+
 	t.Parallel()
 	_, err := w.CancelExistingOrder(1337)
 	if err == nil {
@@ -140,6 +150,7 @@ func TestTrade(t *testing.T) {
 	if isWexEncounteringIssues {
 		t.Skip()
 	}
+
 	t.Parallel()
 	_, err := w.Trade("", "buy", 0, 0)
 	if err == nil {
@@ -151,6 +162,7 @@ func TestGetTransactionHistory(t *testing.T) {
 	if isWexEncounteringIssues {
 		t.Skip()
 	}
+
 	t.Parallel()
 	_, err := w.GetTransactionHistory(0, 0, 0, "", "", "")
 	if err == nil {
@@ -162,6 +174,7 @@ func TestGetTradeHistory(t *testing.T) {
 	if isWexEncounteringIssues {
 		t.Skip()
 	}
+
 	t.Parallel()
 	_, err := w.GetTradeHistory(0, 0, 0, "", "", "", "")
 	if err == nil {
@@ -173,6 +186,7 @@ func TestWithdrawCoins(t *testing.T) {
 	if isWexEncounteringIssues {
 		t.Skip()
 	}
+
 	t.Parallel()
 	_, err := w.WithdrawCoins("", 0, "")
 	if err == nil {
@@ -184,6 +198,7 @@ func TestCoinDepositAddress(t *testing.T) {
 	if isWexEncounteringIssues {
 		t.Skip()
 	}
+
 	t.Parallel()
 	_, err := w.CoinDepositAddress("btc")
 	if err == nil {
@@ -195,6 +210,7 @@ func TestCreateCoupon(t *testing.T) {
 	if isWexEncounteringIssues {
 		t.Skip()
 	}
+
 	t.Parallel()
 	_, err := w.CreateCoupon("bla", 0)
 	if err == nil {
@@ -206,6 +222,7 @@ func TestRedeemCoupon(t *testing.T) {
 	if isWexEncounteringIssues {
 		t.Skip()
 	}
+
 	t.Parallel()
 	_, err := w.RedeemCoupon("bla")
 	if err == nil {
@@ -231,6 +248,7 @@ func TestGetFee(t *testing.T) {
 	if isWexEncounteringIssues {
 		t.Skip()
 	}
+
 	w.SetDefaults()
 	TestSetup(t)
 	var feeBuilder = setFeeBuilder()
@@ -326,9 +344,7 @@ func TestFormatWithdrawPermissions(t *testing.T) {
 // Any tests below this line have the ability to impact your orders on the exchange. Enable canManipulateRealOrders to run them
 // ----------------------------------------------------------------------------------------------------------------------------
 func isRealOrderTestEnabled() bool {
-	if w.APIKey == "" || w.APISecret == "" ||
-		w.APIKey == "Key" || w.APISecret == "Secret" ||
-		!canManipulateRealOrders {
+	if !w.ValidateAPICredentials() || !canManipulateRealOrders {
 		return false
 	}
 	return true
@@ -350,6 +366,7 @@ func TestSubmitOrder(t *testing.T) {
 		FirstCurrency:  symbol.BTC,
 		SecondCurrency: symbol.USD,
 	}
+
 	response, err := w.SubmitOrder(pair, exchange.Buy, exchange.Market, 1, 10, "hi")
 	if err != nil || !response.IsOrderPlaced {
 		t.Errorf("Order failed to be placed: %v", err)

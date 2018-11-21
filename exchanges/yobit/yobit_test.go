@@ -7,6 +7,7 @@ import (
 	"github.com/thrasher-/gocryptotrader/currency/pair"
 	"github.com/thrasher-/gocryptotrader/currency/symbol"
 	exchange "github.com/thrasher-/gocryptotrader/exchanges"
+	"github.com/thrasher-/gocryptotrader/exchanges/assets"
 )
 
 var y Yobit
@@ -29,11 +30,19 @@ func TestSetup(t *testing.T) {
 	if err != nil {
 		t.Error("Test Failed - Yobit init error")
 	}
-	conf.APIKey = apiKey
-	conf.APISecret = apiSecret
-	conf.AuthenticatedAPISupport = true
+	conf.API.Credentials.Key = apiKey
+	conf.API.Credentials.Secret = apiSecret
+	conf.API.AuthenticatedSupport = true
 
 	y.Setup(conf)
+}
+
+func TestFetchTradablePairs(t *testing.T) {
+	t.Parallel()
+	_, err := y.FetchTradablePairs(assets.AssetTypeSpot)
+	if err != nil {
+		t.Errorf("Test failed. FetchTradablePairs err: %s", err)
+	}
 }
 
 func TestGetInfo(t *testing.T) {
@@ -315,9 +324,7 @@ func TestFormatWithdrawPermissions(t *testing.T) {
 // Any tests below this line have the ability to impact your orders on the exchange. Enable canManipulateRealOrders to run them
 // ----------------------------------------------------------------------------------------------------------------------------
 func isRealOrderTestEnabled() bool {
-	if y.APIKey == "" || y.APISecret == "" ||
-		y.APIKey == "Key" || y.APISecret == "Secret" ||
-		!canManipulateRealOrders {
+	if !y.ValidateAPICredentials() || !canManipulateRealOrders {
 		return false
 	}
 	return true
@@ -336,6 +343,7 @@ func TestSubmitOrder(t *testing.T) {
 		FirstCurrency:  symbol.BTC,
 		SecondCurrency: symbol.USD,
 	}
+
 	response, err := y.SubmitOrder(pair, exchange.Buy, exchange.Market, 1, 10, "hi")
 	if err != nil || !response.IsOrderPlaced {
 		t.Errorf("Order failed to be placed: %v", err)

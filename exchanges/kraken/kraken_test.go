@@ -31,10 +31,10 @@ func TestSetup(t *testing.T) {
 		t.Error("Test Failed - kraken Setup() init error", err)
 	}
 
-	krakenConfig.AuthenticatedAPISupport = true
-	krakenConfig.APIKey = apiKey
-	krakenConfig.APISecret = apiSecret
-	krakenConfig.ClientID = clientID
+	krakenConfig.API.AuthenticatedSupport = true
+	krakenConfig.API.Credentials.Key = apiKey
+	krakenConfig.API.Credentials.Secret = apiSecret
+	krakenConfig.API.Credentials.ClientID = clientID
 
 	k.Setup(krakenConfig)
 }
@@ -333,9 +333,7 @@ func TestFormatWithdrawPermissions(t *testing.T) {
 // Any tests below this line have the ability to impact your orders on the exchange. Enable canManipulateRealOrders to run them
 // ----------------------------------------------------------------------------------------------------------------------------
 func isRealOrderTestEnabled() bool {
-	if k.APIKey == "" || k.APISecret == "" ||
-		k.APIKey == "Key" || k.APISecret == "Secret" ||
-		!canManipulateRealOrders {
+	if !k.ValidateAPICredentials() || !canManipulateRealOrders {
 		return false
 	}
 	return true
@@ -354,6 +352,7 @@ func TestSubmitOrder(t *testing.T) {
 		FirstCurrency:  symbol.XBT,
 		SecondCurrency: symbol.CAD,
 	}
+
 	response, err := k.SubmitOrder(p, exchange.Buy, exchange.Market, 1, 10, "hi")
 	if err != nil || !response.IsOrderPlaced {
 		t.Errorf("Order failed to be placed: %v", err)

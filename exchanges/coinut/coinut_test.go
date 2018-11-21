@@ -2,7 +2,6 @@ package coinut
 
 import (
 	"testing"
-	"time"
 
 	"github.com/thrasher-/gocryptotrader/config"
 	"github.com/thrasher-/gocryptotrader/currency/pair"
@@ -30,15 +29,15 @@ func TestSetup(t *testing.T) {
 	if err != nil {
 		t.Error("Test Failed - Coinut Setup() init error")
 	}
-	bConfig.AuthenticatedAPISupport = true
-	bConfig.APIKey = apiKey
+	bConfig.API.AuthenticatedSupport = true
+	bConfig.API.Credentials.Key = apiKey
+	bConfig.API.Credentials.ClientID = clientID
+	bConfig.Verbose = true
 	c.Setup(bConfig)
-	c.ClientID = clientID
 
-	if !c.IsEnabled() ||
-		c.RESTPollingDelay != time.Duration(10) ||
+	if !c.IsEnabled() || !c.Verbose ||
 		c.Websocket.IsEnabled() || len(c.BaseCurrencies) < 1 ||
-		len(c.AvailablePairs) < 1 || len(c.EnabledPairs) < 1 {
+		len(c.CurrencyPairs.Spot.Available) < 1 || len(c.CurrencyPairs.Spot.Enabled) < 1 {
 		t.Error("Test Failed - Coinut Setup values not set correctly")
 	}
 }
@@ -195,9 +194,8 @@ func TestFormatWithdrawPermissions(t *testing.T) {
 // Any tests below this line have the ability to impact your orders on the exchange. Enable canManipulateRealOrders to run them
 // ----------------------------------------------------------------------------------------------------------------------------
 func isRealOrderTestEnabled() bool {
-
-	if c.APIKey == "" ||
-		c.APIKey == "Key" ||
+	if c.API.Credentials.Key == "" ||
+		c.API.Credentials.Key == "Key" ||
 		!canManipulateRealOrders {
 		return false
 	}

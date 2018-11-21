@@ -30,9 +30,9 @@ func TestSetup(t *testing.T) {
 		t.Error("Test Failed - Bithumb Setup() init error")
 	}
 
-	bitConfig.AuthenticatedAPISupport = true
-	bitConfig.APIKey = testAPIKey
-	bitConfig.APISecret = testAPISecret
+	bitConfig.API.AuthenticatedSupport = true
+	bitConfig.API.Credentials.Key = testAPIKey
+	bitConfig.API.Credentials.Secret = testAPISecret
 
 	b.Setup(bitConfig)
 }
@@ -290,9 +290,7 @@ func TestFormatWithdrawPermissions(t *testing.T) {
 // Any tests below this line have the ability to impact your orders on the exchange. Enable canManipulateRealOrders to run them
 // ----------------------------------------------------------------------------------------------------------------------------
 func isRealOrderTestEnabled() bool {
-	if b.APIKey == "" || b.APISecret == "" ||
-		b.APIKey == "Key" || b.APISecret == "Secret" ||
-		!canManipulateRealOrders {
+	if !b.ValidateAPICredentials() || !canManipulateRealOrders {
 		return false
 	}
 	return true

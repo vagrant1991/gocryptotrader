@@ -12,6 +12,7 @@ import (
 	"github.com/thrasher-/gocryptotrader/common"
 	"github.com/thrasher-/gocryptotrader/currency/pair"
 	"github.com/thrasher-/gocryptotrader/exchanges"
+	"github.com/thrasher-/gocryptotrader/exchanges/assets"
 	"github.com/thrasher-/gocryptotrader/exchanges/orderbook"
 )
 
@@ -56,9 +57,9 @@ func (h *HitBTC) WsConnect() error {
 
 // WsSubscribe subscribes to the relevant channels
 func (h *HitBTC) WsSubscribe() error {
-	enabledPairs := h.GetEnabledCurrencies()
+	enabledPairs := h.GetEnabledPairs(assets.AssetTypeSpot)
 	for _, p := range enabledPairs {
-		pF := exchange.FormatExchangeCurrency(h.GetName(), p)
+		pF := h.FormatExchangeCurrency(p, assets.AssetTypeSpot)
 
 		tickerSubReq, err := common.JSONEncode(WsNotification{
 			JSONRPCVersion: rpcVersion,

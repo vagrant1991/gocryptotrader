@@ -31,9 +31,9 @@ func TestSetup(t *testing.T) {
 		t.Error("Test Failed - Poloniex Setup() init error")
 	}
 
-	poloniexConfig.AuthenticatedAPISupport = true
-	poloniexConfig.APIKey = apiKey
-	poloniexConfig.APISecret = apiSecret
+	poloniexConfig.API.AuthenticatedSupport = true
+	poloniexConfig.API.Credentials.Key = apiKey
+	poloniexConfig.API.Credentials.Secret = apiSecret
 
 	p.Setup(poloniexConfig)
 }
@@ -196,9 +196,7 @@ func TestFormatWithdrawPermissions(t *testing.T) {
 // Any tests below this line have the ability to impact your orders on the exchange. Enable canManipulateRealOrders to run them
 // ----------------------------------------------------------------------------------------------------------------------------
 func isRealOrderTestEnabled() bool {
-	if p.APIKey == "" || p.APISecret == "" ||
-		p.APIKey == "Key" || p.APISecret == "Secret" ||
-		!canManipulateRealOrders {
+	if !p.ValidateAPICredentials() || !canManipulateRealOrders {
 		return false
 	}
 	return true
@@ -217,6 +215,7 @@ func TestSubmitOrder(t *testing.T) {
 		FirstCurrency:  symbol.BTC,
 		SecondCurrency: symbol.LTC,
 	}
+
 	response, err := p.SubmitOrder(pair, exchange.Buy, exchange.Market, 1, 10, "hi")
 	if err != nil || !response.IsOrderPlaced {
 		t.Errorf("Order failed to be placed: %v", err)
